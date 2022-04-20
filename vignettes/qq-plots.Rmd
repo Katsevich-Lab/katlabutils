@@ -1,0 +1,120 @@
+---
+title: "Making QQ plots"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{qq-plots}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+set.seed(1)
+```
+
+We often make QQ plots in the Katsevich Lab, and we've found the `qqplotr` package to be somewhat deficient for this purpose. In particular, this package breaks when multiple QQ plots are displayed on the same axes, or when axis transformations are used. The `katlabutils` package therefore contains functions to help us make QQ plots with the aforementioned functionalities.
+```{r setup, message=FALSE}
+library(katlabutils)
+library(ggplot2)
+library(dplyr)
+library(tibble)
+```
+
+Let's start with a basic example of a vanilla QQ plot for uniform random variables.
+```{r}
+data <- tibble(pvalue = runif(100))
+data |>
+  ggplot(aes(y = pvalue)) + # variable to be plotted in y aesthetic
+  stat_qq_points() +        # add the points to the QQ plot
+  stat_qq_band() +          # add the band to the QQ plot
+  geom_abline() +           # add the 45 degree line
+  labs(
+    x = "Expected quantile",
+    y = "Observed quantile"
+  ) +
+  theme_bw()
+```
+
+If we want to look at the tail of the distribution, it's useful to log-transform both axes. We can do this with the help of the `revlog_trans()` function:
+```{r}
+data |>
+  ggplot(aes(y = pvalue)) +
+  stat_qq_points() +
+  stat_qq_band() +
+  geom_abline() +
+  labs(
+    x = "Expected quantile",
+    y = "Observed quantile"
+  ) +
+  scale_x_continuous(trans = revlog_trans(base = 10)) +
+  scale_y_continuous(trans = revlog_trans(base = 10)) +
+  theme_bw()
+```
+
+We can create QQ plots for arbitrary [distributions from the stats package](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/Distributions.html). We just need to specify the distribution to the `distribution` argument to both `stat_qq_points` and `stat_qq_band`. If the `stats` package has density function `dxxxx`, then we pass `distribution = "xxxx"` to `stat_qq_points` and `stat_qq_band`. Below is an example of a normal QQ plot:
+```{r}
+data <- tibble(zvalue = rnorm(100))
+data |>
+  ggplot(aes(y = zvalue)) +
+  stat_qq_points(distribution = "norm") +
+  stat_qq_band(distribution = "norm") +
+  geom_abline() +
+  labs(
+    x = "Expected quantile",
+    y = "Observed quantile"
+  ) +
+  theme_bw()
+```
+
+The `stat_qq_points` and `stat_qq_band` layers can be composed arbitrarily with `ggplot2`'s functionalities. For example, we can display multiple QQ plots on the same axes using color:
+```{r, fig.width=4}
+data <- tibble(
+  pvalue = c(runif(100), sqrt(runif(100))),
+  method = c(rep("A", 100), rep("B", 100))
+)
+data |>
+  ggplot(aes(y = pvalue, colour = method)) +
+  stat_qq_points() +
+  stat_qq_band() +
+  geom_abline() +
+  labs(
+    x = "Expected quantile",
+    y = "Observed quantile"
+  ) +
+  scale_x_continuous(trans = revlog_trans(base = 10)) +
+  scale_y_continuous(trans = revlog_trans(base = 10)) +
+  theme_bw()
+```
+
+We can also using `ggplot2`'s faceting functionality:
+
+```{r, fig.width=6}
+data <- rbind(
+  tibble(
+    pvalue = c(runif(100), sqrt(runif(100))),
+    method = c(rep("A", 100), rep("B", 100)),
+    dataset = c("Dataset 1")
+  ),
+  tibble(
+    pvalue = c(runif(100), runif(100)),
+    method = c(rep("A", 100), rep("B", 100)),
+    dataset = c("Dataset 2")
+  )
+)
+data |>
+  ggplot(aes(y = pvalue, colour = method)) +
+  stat_qq_points() +
+  stat_qq_band() +
+  geom_abline() +
+  scale_x_continuous(trans = revlog_trans(base = 10)) +
+  scale_y_continuous(trans = revlog_trans(base = 10)) +
+  facet_wrap(~dataset) +
+  labs(
+    x = "Expected quantile",
+    y = "Observed quantile"
+  ) +
+  theme_bw()
+```
