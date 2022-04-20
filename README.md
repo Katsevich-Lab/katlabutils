@@ -6,5 +6,5 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of katlabutils is to provide utility functions broadly useful
+The goal of `katlabutils` is to provide utility functions broadly useful
 for Katsevich Lab research.
