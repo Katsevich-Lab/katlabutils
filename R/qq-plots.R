@@ -108,8 +108,8 @@ StatQQPoints <- ggplot2::ggproto("StatQQPoints", ggplot2::Stat,
                     x = scales$x$trans$transform(x),
                     y = scales$y$trans$transform(y)) |>
       # downsample
-      dplyr::mutate(x_int = cut_interval(x, n = max_pts_to_plot),
-                    y_int = cut_interval(y, n = max_pts_to_plot)) |>
+      dplyr::mutate(x_int = ggplot2::cut_interval(x, n = max_pts_to_plot),
+                    y_int = ggplot2::cut_interval(y, n = max_pts_to_plot)) |>
       dplyr::group_by(x_int, y_int) |>
       dplyr::slice_sample(n = 1) |>
       dplyr::ungroup()
