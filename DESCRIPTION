@@ -16,8 +16,6 @@ Imports:
     ggplot2,
     Matrix,
     scales,
-    tibble,
-    tidyr
 Suggests: 
     knitr,
     rmarkdown,

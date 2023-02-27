@@ -53,8 +53,8 @@ StatQQBand <- ggplot2::ggproto("StatQQBand", ggplot2::Stat,
         ymin = scales$y$trans$transform(ymin),
         ymax = scales$y$trans$transform(ymax)
       ) |>   # downsample
-      dplyr::mutate(x_int = cut_interval(x, n = max_pts_to_plot),
-                    y_int = cut_interval(y, n = max_pts_to_plot)) |>
+      dplyr::mutate(x_int = ggplot2::cut_interval(x, n = max_pts_to_plot),
+                    y_int = ggplot2::cut_interval(y, n = max_pts_to_plot)) |>
       dplyr::group_by(x_int, y_int) |>
       dplyr::slice_sample(n = 1) |>
       dplyr::ungroup()
